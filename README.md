@@ -65,6 +65,10 @@ Variables d'environnement (Vercel → Settings → Environment Variables) :
 
 `RESEND_API_KEY` peut remplacer `BREVO_API_KEY` (Resend : 100 e-mails / jour gratuits).
 
+Vérification : ouvrir `/api/health` sur le site en ligne. Tout est prêt quand la page affiche
+`"ready": true`. En ligne, le site refuse de fonctionner sans base de données (aucune donnée
+n'est jamais gardée en mémoire) et n'affiche jamais le code à l'écran.
+
 ## Interface admin (`/#admin`)
 
 - **🏆 Semaine** : classement complet avec e-mail et téléphone, les 3 gagnants avec leur prix,

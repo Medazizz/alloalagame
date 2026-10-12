@@ -52,7 +52,8 @@ function memoryStore() {
 }
 
 function redisStore() {
-  const r = new Redis({ url, token });
+  // valeurs brutes (texte) : pas de conversion automatique surprise
+  const r = new Redis({ url, token, automaticDeserialization: false });
   return {
     memory: false,
     get: (k) => r.get(k),
@@ -77,6 +78,18 @@ function redisStore() {
   };
 }
 
+export const storeConfigured = Boolean(url && token);
+// En ligne (Vercel), la base de données est obligatoire : sans elle, les données
+// seraient perdues. On refuse donc de démarrer en mémoire.
+const online = Boolean(process.env.VERCEL);
+
+function missingStore() {
+  const fail = async () => {
+    throw Object.assign(new Error("Base de données non configurée (Upstash Redis)."), { status: 503 });
+  };
+  return new Proxy({}, { get: (_, prop) => (prop === "memory" ? false : fail) });
+}
+
 // En mémoire, on garde le même objet entre les appels (serveur de dev)
 const g = globalThis;
-export const store = url && token ? redisStore() : (g.__aaStore ||= memoryStore());
+export const store = storeConfigured ? redisStore() : online ? missingStore() : (g.__aaStore ||= memoryStore());
