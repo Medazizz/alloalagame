@@ -1,6 +1,7 @@
 // Profil du joueur connecté : GET pour lire, POST { name } pour choisir son pseudo.
-import { send, body, player, profile, cleanName } from "./_lib/util.js";
+import { send, body, player, cleanName } from "./_lib/util.js";
 import { store } from "./_lib/store.js";
+import { summary } from "./_lib/points.js";
 
 export default async function handler(req, res) {
   const phone = await player(req);
@@ -10,5 +11,5 @@ export default async function handler(req, res) {
     if (!name) return send(res, 400, { error: "Pseudo : 2 à 18 caractères." });
     await store.set(`name:${phone}`, name);
   }
-  return send(res, 200, { profile: await profile(phone) });
+  return send(res, 200, { me: await summary(phone) });
 }

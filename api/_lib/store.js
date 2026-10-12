@@ -8,11 +8,14 @@ const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TO
 function memoryStore() {
   const kv = new Map(); // clé -> { v, exp }
   const z = new Map(); // clé -> Map(membre -> score)
+  const h = new Map(); // clé -> Map(champ -> valeur)
   const alive = (k) => {
     const e = kv.get(k);
     if (e && e.exp && e.exp < Date.now()) kv.delete(k);
     return kv.get(k);
   };
+  const zs = (k) => (z.has(k) ? z.get(k) : z.set(k, new Map()).get(k));
+  const hs = (k) => (h.has(k) ? h.get(k) : h.set(k, new Map()).get(k));
   return {
     memory: true,
     async get(k) { return alive(k)?.v ?? null; },
@@ -21,7 +24,7 @@ function memoryStore() {
       kv.set(k, { v, exp: opts.ex ? Date.now() + opts.ex * 1000 : 0 });
       return "OK";
     },
-    async del(k) { kv.delete(k); z.delete(k); return 1; },
+    async del(k) { kv.delete(k); z.delete(k); h.delete(k); return 1; },
     async incr(k) {
       const e = alive(k);
       const v = (e ? Number(e.v) : 0) + 1;
@@ -29,23 +32,22 @@ function memoryStore() {
       return v;
     },
     async expire(k, s) { const e = alive(k); if (e) e.exp = Date.now() + s * 1000; return 1; },
-    async zaddGt(k, score, member) {
-      if (!z.has(k)) z.set(k, new Map());
-      const m = z.get(k);
-      if (!m.has(member) || m.get(member) < score) m.set(member, score);
-    },
+    async zset(k, score, member) { zs(k).set(member, score); },
     async zTop(k, n) {
-      const m = z.get(k) || new Map();
-      return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, n).map(([member, score]) => ({ member, score }));
+      return [...zs(k).entries()].sort((a, b) => b[1] - a[1]).slice(0, n).map(([member, score]) => ({ member, score }));
     },
     async zRankDesc(k, member) {
-      const m = z.get(k) || new Map();
+      const m = zs(k);
       if (!m.has(member)) return null;
       const s = m.get(member);
       return [...m.values()].filter((v) => v > s).length;
     },
-    async zScore(k, member) { return z.get(k)?.get(member) ?? null; },
-    async zCard(k) { return z.get(k)?.size || 0; },
+    async zScore(k, member) { return zs(k).get(member) ?? null; },
+    async zCard(k) { return zs(k).size; },
+    async hget(k, f) { return hs(k).get(f) ?? null; },
+    async hset(k, obj) { for (const [f, v] of Object.entries(obj)) hs(k).set(f, v); },
+    async hgetall(k) { return h.has(k) ? Object.fromEntries(h.get(k)) : null; },
+    async hincrby(k, f, n) { const m = hs(k); m.set(f, Number(m.get(f) || 0) + n); return m.get(f); },
   };
 }
 
@@ -58,7 +60,7 @@ function redisStore() {
     del: (k) => r.del(k),
     incr: (k) => r.incr(k),
     expire: (k, s) => r.expire(k, s),
-    zaddGt: (k, score, member) => r.zadd(k, { gt: true }, { score, member }),
+    zset: (k, score, member) => r.zadd(k, { score, member }),
     async zTop(k, n) {
       const flat = await r.zrange(k, 0, n - 1, { rev: true, withScores: true });
       const out = [];
@@ -68,6 +70,10 @@ function redisStore() {
     zRankDesc: (k, member) => r.zrevrank(k, member),
     zScore: (k, member) => r.zscore(k, member),
     zCard: (k) => r.zcard(k),
+    hget: (k, f) => r.hget(k, f),
+    hset: (k, obj) => r.hset(k, obj),
+    hgetall: (k) => r.hgetall(k),
+    hincrby: (k, f, n) => r.hincrby(k, f, n),
   };
 }
 

@@ -1,7 +1,7 @@
 // Moteur du jeu « Allo..Ala Rush » (canvas 2D, sans bibliothèque).
 // Le livreur roule sur 3 voies : il ramasse les commandes (🍕💊📦…),
 // les dépose aux maisons 🏠 et évite les obstacles. 60 secondes, 3 vies.
-import { sfx, buzz } from "./sound.js";
+import { sfx, buzz } from "../sound.js";
 
 export const GAME_SECONDS = 60;
 const MAX_CARRY = 3;

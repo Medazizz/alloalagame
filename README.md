@@ -1,8 +1,30 @@
-# Allo..Ala Rush — le jeu
+# Allo..Ala Jeux
 
-Mini-jeu de livraison Allo..Ala : le joueur livre un maximum de commandes
-dans les rues de Sbeïtla en 60 secondes. Classement hebdomadaire (lundi 00:00 →
-dimanche 23:59, heure de Tunisie) :
+Site de jeux Allo..Ala : 3 jeux, des points qui s'additionnent, des missions
+bonus, du parrainage et un classement hebdomadaire avec des prix.
+
+## Les jeux
+
+| Jeu | Principe | Durée |
+|---|---|---|
+| 🛵 Allo..Ala Rush | Ramasser les commandes, les livrer aux maisons, éviter les obstacles | 60 s |
+| 📦 Attrape-Commandes | Attraper les commandes qui tombent dans le coffre, éviter les pièges | 45 s |
+| 🧠 Mémo Livraison | Retrouver les 8 paires le plus vite, en un minimum de coups | ~1 min |
+
+## Les points (semaine du lundi 00:00 au dimanche 23:59, heure de Tunisie)
+
+**Total = meilleur score de la semaine dans chaque jeu (additionnés) + points bonus.**
+
+| Bonus | Points |
+|---|---|
+| Abonnement Facebook (une fois) | +100 |
+| Abonnement Instagram (une fois) | +100 |
+| Partage du site / de l'app (une fois par jour) | +30 |
+| Ami parrainé (quand il joue sa 1ʳᵉ partie) | +200, et +100 pour l'ami |
+
+Les abonnements sont déclaratifs (pas de vérification possible sans accès à Meta).
+
+## Les prix
 
 | Place | Prix |
 |---|---|
@@ -10,8 +32,7 @@ dimanche 23:59, heure de Tunisie) :
 | 🥈 2ᵉ | 3 livraisons offertes |
 | 🥉 3ᵉ | 3 livraisons offertes |
 
-Un seul prix par numéro et par semaine. Les joueurs se connectent avec leur
-numéro, vérifié par un code SMS.
+Un seul prix par numéro et par semaine. Connexion par numéro vérifié par SMS.
 
 ## Démarrer sur l'ordinateur
 
@@ -35,18 +56,22 @@ Variables d'environnement à ajouter dans Vercel (Settings → Environment Varia
 
 Sans les variables Twilio, l'envoi de SMS est refusé en ligne (pas de mode test en production).
 
-## Chaque lundi
+## Interface admin (`/#admin`)
 
-1. Ouvrir `/#admin`, entrer la clé admin.
-2. La semaine terminée s'affiche avec les 3 gagnants et leur numéro.
-3. Créditer les prix dans l'application Allo..Ala, puis « Marquer récompensé ».
+- Tous les joueurs de la semaine : numéro, pseudo, points par jeu, bonus, parrainages.
+- Les 3 gagnants avec leur prix, un bouton « 💬 Prévenir » (WhatsApp) et « Marquer récompensé ».
+- Recherche par nom ou numéro, export Excel (CSV), semaines précédentes.
+
+Chaque lundi : passer à « Semaine dernière », créditer les prix dans l'application
+Allo..Ala, prévenir les gagnants, puis « Marquer récompensé ».
 
 ## Structure
 
 ```
-api/            serveur (fonctions Vercel) : SMS, parties, classement, admin
-src/game.js     moteur du jeu (canvas)
-src/App.jsx     écrans : accueil, partie, résultat, classement, connexion
-src/Admin.jsx   page admin des gagnants
+api/            serveur (fonctions Vercel) : SMS, parties, points, bonus, parrainage, classement, admin
+src/config.js   liens, jeux, prix, points bonus (à modifier ici)
+src/games/      les 3 jeux (rush.js, catch.js, Memo.jsx)
+src/App.jsx     écrans : accueil, classement, bonus, profil, partie, résultat, connexion
+src/Admin.jsx   interface admin
 src/sound.js    sons synthétisés
 ```
