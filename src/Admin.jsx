@@ -277,9 +277,17 @@ export default function Admin() {
     };
     window.addEventListener("message", onMsg);
     toParent({ type: "alloala-jeux-ready" });
-    const ro = new ResizeObserver(() => toParent({ type: "alloala-jeux-height", height: document.documentElement.scrollHeight }));
-    ro.observe(document.body);
-    return () => { window.removeEventListener("message", onMsg); ro.disconnect(); };
+    // hauteur réelle du contenu (pas celle de la fenêtre, sinon elle grandit sans fin)
+    const report = () => {
+      const el = document.querySelector(".admin-app");
+      if (el) toParent({ type: "alloala-jeux-height", height: Math.ceil(el.getBoundingClientRect().height) + 4 });
+    };
+    const ro = new ResizeObserver(report);
+    const watch = () => { const el = document.querySelector(".admin-app"); if (el) ro.observe(el); report(); };
+    watch();
+    const mo = new MutationObserver(watch);
+    mo.observe(document.getElementById("root"), { childList: true });
+    return () => { window.removeEventListener("message", onMsg); ro.disconnect(); mo.disconnect(); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (EMBED && !ok && !error && waiting) return <main className="admin-app"><div className="skeleton" /></main>;
