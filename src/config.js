@@ -45,16 +45,23 @@ export const games = [
 ];
 
 export const prizes = [
-  { medal: "🥇", title: "1ʳᵉ place", prize: "10 TND + 3 livraisons offertes" },
-  { medal: "🥈", title: "2ᵉ place", prize: "3 livraisons offertes" },
-  { medal: "🥉", title: "3ᵉ place", prize: "3 livraisons offertes" },
+  { medal: "🥇", title: "1ʳᵉ place", prize: "10 DT" },
+  { medal: "🥈", title: "2ᵉ place", prize: "1 livraison offerte" },
+  { medal: "🥉", title: "3ᵉ place", prize: "−50 % sur une livraison" },
 ];
+
+// Les 3 gagnants de chaque semaine participent au tirage au sort du mois
+export const lottery = "🎟️ Les 3 gagnants de chaque semaine participent au tirage au sort du mois pour un prix spécial… secret 🤫";
+
+// Points des jeux : meilleur score de la semaine ÷ 20, max 50 par jeu (comme api/_lib/points.js)
+export const gamePoints = (score) => Math.min(50, Math.round(Number(score || 0) / 20));
 
 // Points bonus (doivent correspondre à api/_lib/points.js)
 export const bonus = {
-  follow_fb: 100,
-  follow_ig: 100,
-  share: 30,
+  follow_fb: 150,
+  follow_ig: 150,
+  follow_tt: 150,
+  share: 50,
   referral: 200,
-  welcome: 100,
+  welcome: 50,
 };

@@ -36,6 +36,16 @@ export function normalizePhone(input) {
   return `+216${d}`;
 }
 
+export function normalizeEmail(input) {
+  const e = String(input || "").trim().toLowerCase();
+  return /^[^\s@]{1,64}@[^\s@]{1,190}\.[a-z]{2,}$/.test(e) ? e : null;
+}
+
+export function maskEmail(e) {
+  const [u, d] = String(e).split("@");
+  return `${u.slice(0, 2)}•••@${d}`;
+}
+
 export function maskPhone(e164) {
   const d = e164.replace("+216", "");
   return `${d.slice(0, 2)} ••• ${d.slice(5)}`;
@@ -70,21 +80,31 @@ export async function player(req) {
   const h = String(req.headers.authorization || "");
   const token = h.startsWith("Bearer ") ? h.slice(7) : "";
   if (!token || token.length > 100) return null;
-  const phone = await store.get(`sess:${token}`);
-  return phone ? String(phone) : null;
+  const uid = await store.get(`sess:${token}`);
+  return uid ? String(uid) : null;
 }
 
-export async function profile(phone) {
-  const name = await store.get(`name:${phone}`);
-  return { phone, masked: maskPhone(phone), name: name ? String(name) : null };
-}
-
-export function cleanName(s) {
-  const n = String(s || "").replace(/[<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 18);
-  return n.length >= 2 ? n : null;
+// Nom d'utilisateur : 3 à 16 caractères, lettres (accents compris), chiffres, _ . -
+export function cleanUsername(s) {
+  const n = String(s || "").trim();
+  return /^[\p{L}\p{N}_.-]{3,16}$/u.test(n) ? n : null;
 }
 
 export function safeEqual(a, b) {
   const x = Buffer.from(String(a)), y = Buffer.from(String(b));
   return x.length === y.length && crypto.timingSafeEqual(x, y);
+}
+
+// Accès admin : clé ADMIN_KEY dans l'en-tête x-admin-key (« dev » en local)
+export async function adminOk(req, res) {
+  const key = process.env.ADMIN_KEY || (process.env.DEV_MAIL === "1" ? "dev" : "");
+  if (await limited(`admin:${ip(req)}`, 120, 600)) {
+    send(res, 429, { error: "Trop d'essais." });
+    return false;
+  }
+  if (!key || !safeEqual(req.headers["x-admin-key"] || "", key)) {
+    send(res, 401, { error: "Clé admin incorrecte." });
+    return false;
+  }
+  return true;
 }

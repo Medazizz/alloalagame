@@ -4,12 +4,12 @@ import path from "node:path";
 import fs from "node:fs";
 
 // En développement, sert les fonctions du dossier /api comme le fait Vercel
-// (mode test : le code SMS s'affiche à l'écran au lieu d'être envoyé).
+// (mode test : le code e-mail s'affiche à l'écran au lieu d'être envoyé).
 function devApi() {
   return {
     name: "dev-api",
     configureServer(server) {
-      process.env.DEV_SMS ??= "1";
+      process.env.DEV_MAIL ??= "1";
       server.middlewares.use(async (req, res, next) => {
         const url = new URL(req.url, "http://localhost");
         if (!url.pathname.startsWith("/api/")) return next();
