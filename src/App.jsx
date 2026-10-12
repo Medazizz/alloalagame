@@ -741,6 +741,19 @@ export default function App() {
   else content = <Home me={me} onPlay={play} onLogin={() => openLogin()} goto={goto} onRules={() => setRules(true)} />;
 
   return (
+    <div className="shell">
+    {/* Panneau de gauche : uniquement sur grand écran */}
+    <aside className="desk-side" aria-label="Présentation">
+      <img src={logo} alt="Logo Allo..Ala" className="ds-logo" />
+      <h1>Allo<span>..Ala</span> Jeux</h1>
+      <p className="ds-ar ar">كلمني ... نفضهالك</p>
+      <p className="ds-sub">Jouez, cumulez des points et gagnez chaque semaine. Livraison à Sbeïtla &amp; Kasserine.</p>
+      <ul className="ds-prizes">
+        {prizes.map((p) => <li key={p.title}><span>{p.medal}</span><b>{p.title}</b> {p.prize}</li>)}
+      </ul>
+      <p className="ds-lottery">🎟️ Tirage au sort chaque mois pour un prix secret</p>
+      <p className="ds-tip">📱 Meilleure expérience sur téléphone</p>
+    </aside>
     <main className={`app${playing && !result ? " is-playing" : ""}`}>
       <div className="bg-blobs" aria-hidden="true"><i /><i /><i /></div>
       {content}
@@ -759,5 +772,6 @@ export default function App() {
       {rules && <Rules onClose={() => setRules(false)} />}
       {privacy && <Privacy onClose={() => setPrivacy(false)} />}
     </main>
+    </div>
   );
 }
