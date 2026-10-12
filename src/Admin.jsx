@@ -230,17 +230,37 @@ function Lottery({ adminKey }) {
   );
 }
 
+// Mode « tableau de bord » : l'admin est affiché dans le tableau de bord Alloala
+// (https://alloala.com/admin/jeux) via …/jeu/?embed=1#admin. Le tableau de bord
+// (même domaine) lui transmet la clé et reçoit sa hauteur pour éviter la double barre de défilement.
+const EMBED = window.parent !== window && new URLSearchParams(location.search).has("embed");
+if (EMBED) {
+  document.documentElement.classList.add("embed");
+  const font = document.createElement("link");
+  font.rel = "stylesheet";
+  font.href = "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap";
+  document.head.appendChild(font);
+}
+const toParent = (msg) => window.parent.postMessage(msg, location.origin);
+
 export default function Admin() {
   const [key, setKey] = useState(() => { try { return sessionStorage.getItem("aa-admin") || ""; } catch { return ""; } });
   const [ok, setOk] = useState(false);
   const [error, setError] = useState("");
   const [tab, setTab] = useState("week");
-  async function open(e) {
+  const [waiting, setWaiting] = useState(EMBED);
+  useEffect(() => {
+    if (!EMBED) return;
+    const t = setTimeout(() => setWaiting(false), 2500); // pas de clé reçue : on affiche le formulaire
+    return () => clearTimeout(t);
+  }, []);
+  async function open(e, k = key) {
     e?.preventDefault();
     setError("");
     try {
-      await api("admin/users", { headers: { "x-admin-key": key } });
-      try { sessionStorage.setItem("aa-admin", key); } catch { /* rien */ }
+      await api("admin/users", { headers: { "x-admin-key": k } });
+      try { sessionStorage.setItem("aa-admin", k); } catch { /* rien */ }
+      setKey(k);
       setOk(true);
     } catch (err) {
       setError(err.message);
@@ -248,19 +268,37 @@ export default function Admin() {
   }
   useEffect(() => { if (key) open(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Dans le tableau de bord : on reçoit la clé, et on communique notre hauteur
+  useEffect(() => {
+    if (!EMBED) return;
+    const onMsg = (e) => {
+      if (e.origin !== location.origin || e.source !== window.parent) return;
+      if (e.data?.type === "alloala-jeux-key" && typeof e.data.key === "string" && e.data.key) open(null, e.data.key);
+    };
+    window.addEventListener("message", onMsg);
+    toParent({ type: "alloala-jeux-ready" });
+    const ro = new ResizeObserver(() => toParent({ type: "alloala-jeux-height", height: document.documentElement.scrollHeight }));
+    ro.observe(document.body);
+    return () => { window.removeEventListener("message", onMsg); ro.disconnect(); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (EMBED && !ok && !error && waiting) return <main className="admin-app"><div className="skeleton" /></main>;
+
   return (
     <main className="admin-app">
+      {(!EMBED || !ok) && (
       <header className="admin-top">
-        <h1>🔒 Admin · Allo..Ala Jeux</h1>
-        {ok ? (
-          <button className="btn ghost" onClick={() => { try { sessionStorage.removeItem("aa-admin"); } catch { /* rien */ } setOk(false); setKey(""); }}>Verrouiller</button>
-        ) : (
-          <form onSubmit={open} className="admin-key">
-            <input type="password" placeholder="Clé admin" value={key} onChange={(e) => setKey(e.target.value)} autoFocus />
-            <button className="btn primary">Ouvrir</button>
-          </form>
-        )}
-      </header>
+          <h1>{EMBED ? "Clé de l'espace jeux" : "🔒 Admin · Allo..Ala Jeux"}</h1>
+          {ok ? (!EMBED &&
+            <button className="btn ghost" onClick={() => { try { sessionStorage.removeItem("aa-admin"); } catch { /* rien */ } setOk(false); setKey(""); }}>Verrouiller</button>
+          ) : (
+            <form onSubmit={open} className="admin-key">
+              <input type="password" placeholder="Clé admin" value={key} onChange={(e) => setKey(e.target.value)} autoFocus />
+              <button className="btn primary">Ouvrir</button>
+            </form>
+          )}
+        </header>
+      )}
       {error && <p className="err">{error}</p>}
       {ok && (
         <>

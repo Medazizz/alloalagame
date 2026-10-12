@@ -408,3 +408,51 @@ button:focus-visible, input:focus-visible, a:focus-visible{ outline: 3px solid v
   .bonus-banner, .bb-emoji, .skeleton{ animation: none; }
   .screen, .game-card, .pod, .big-score, .modal-card, .bg-blobs i, .timebar i.low, .mcard{ animation: none; transition: none; }
 }
+
+/* =====================================================================
+   Mode « tableau de bord » (html.embed) : l'admin des jeux affiché dans
+   https://alloala.com/admin/jeux, au style du tableau de bord Alloala
+   (fond clair, cartes blanches, Plus Jakarta Sans, orange #f4651c).
+   ===================================================================== */
+html.embed, html.embed body{ background: transparent; color: #0f172a; font-family: "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, sans-serif; color-scheme: light; }
+html.embed body::after, html.embed .bg-blobs{ display: none; }
+html.embed .admin-app{ max-width: none; padding: 0 2px 8px; gap: 16px; }
+html.embed .admin-top h1{ font-family: inherit; font-size: 16px; color: #0f172a; }
+html.embed .sec{ font-family: inherit; font-size: 15px; font-weight: 700; color: #0f172a; margin: 4px 0 0; }
+html.embed .sec small{ color: #64748b; }
+html.embed .muted{ color: #64748b; }
+html.embed .err{ background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
+html.embed .btn{ min-height: 38px; padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; background: #f1f5f9; border: 1px solid transparent; color: #334155; box-shadow: none; }
+html.embed .btn:hover{ background: #e2e8f0; }
+html.embed .btn.primary{ background: #f4651c; color: #fff; box-shadow: none; }
+html.embed .btn.primary:hover{ background: #db4910; }
+html.embed .btn.ok{ background: #d1fae5; color: #065f46; border-color: transparent; }
+html.embed .btn:disabled{ opacity: .45; }
+html.embed .admin-key input, html.embed .search{ background: #fff; border: 1px solid #e2e8f0; color: #0f172a; border-radius: 10px; padding: 9px 12px; font-size: 14px; }
+html.embed .admin-key input:focus, html.embed .search:focus{ outline: none; border-color: #fb7b38; box-shadow: 0 0 0 3px rgba(244,101,28,.15); }
+html.embed .admin-tabs{ background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 4px; box-shadow: 0 1px 2px rgba(15,23,42,.05); }
+html.embed .admin-tabs button{ color: #64748b; font-size: 13px; font-weight: 600; min-height: 38px; border-radius: 9px; }
+html.embed .admin-tabs button.on{ background: #f4651c; color: #fff; box-shadow: 0 4px 10px -4px rgba(244,101,28,.6); }
+html.embed .admin-week b{ color: #0f172a; }
+html.embed .admin-week small{ color: #64748b; }
+html.embed .admin-stats div, html.embed .winner, html.embed .table-wrap, html.embed .draw-result{
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 2px rgba(15,23,42,.05);
+}
+html.embed .admin-stats b{ font-family: inherit; color: #0f172a; font-size: 24px; }
+html.embed .admin-stats small{ color: #64748b; }
+html.embed .winner.w1{ background: linear-gradient(120deg, #fff7ed, #fff); border-color: #fed7aa; }
+html.embed .w-info b{ color: #0f172a; }
+html.embed .w-info small{ color: #64748b; }
+html.embed .w-phone{ font-family: inherit; color: #db4910; }
+html.embed .ptable{ font-size: 13px; }
+html.embed .ptable th{ background: #f8fafc; color: #64748b; font-weight: 600; letter-spacing: .03em; }
+html.embed .ptable td{ border-top: 1px solid #f1f5f9; color: #334155; }
+html.embed .ptable td b{ color: #0f172a; }
+html.embed .ptable tr:hover td{ background: #f8fafc; }
+html.embed .ptable tr.is-top td:first-child{ color: #f4651c; }
+html.embed .ptable a{ color: #db4910; }
+html.embed .ptable .detail td{ background: #fff7ed; color: #475569; }
+html.embed .draw-result{ background: linear-gradient(140deg, #faf5ff, #fff7ed); border-color: #e9d5ff; }
+html.embed .draw-result p, html.embed .draw-result small{ color: #64748b; }
+html.embed .draw-result > b{ font-family: inherit; color: #0f172a; }
+html.embed .skeleton{ height: 120px; background: linear-gradient(100deg, #f1f5f9 30%, #e2e8f0 50%, #f1f5f9 70%) 0 0 / 200% 100%; }
