@@ -1,18 +1,37 @@
-// Vérification par e-mail (gratuite) : un code à 6 chiffres envoyé par e-mail.
-// Fournisseurs gratuits pris en charge :
-//   - Brevo  : BREVO_API_KEY  (300 e-mails / jour gratuits, expéditeur = une simple adresse vérifiée, ex. Gmail)
-//   - Resend : RESEND_API_KEY (100 e-mails / jour gratuits)
-// MAIL_FROM = adresse d'expédition (ex. alloala.jeux@gmail.com), MAIL_NAME = nom affiché.
-// Sans clé : mode test, le code est renvoyé à l'écran uniquement si DEV_MAIL=1 (jamais en production).
+// Vérification par e-mail : un code à 6 chiffres envoyé par e-mail.
+// Méthode principale : la boîte mail du domaine (ex. contact@alloala.com) en SMTP
+//   SMTP_HOST, SMTP_PORT (465 ou 587), SMTP_USER, SMTP_PASS
+// Autres possibilités : BREVO_API_KEY ou RESEND_API_KEY.
+// MAIL_FROM = adresse d'expédition, MAIL_NAME = nom affiché.
+// Sans réglage : mode test, le code est renvoyé à l'écran uniquement si DEV_MAIL=1 (jamais en production).
 import crypto from "node:crypto";
+import nodemailer from "nodemailer";
 import { store } from "./store.js";
 
-const BREVO = process.env.BREVO_API_KEY;
-const RESEND = process.env.RESEND_API_KEY;
-const FROM = process.env.MAIL_FROM || "";
-const NAME = process.env.MAIL_NAME || "Allo..Ala Jeux";
+const env = process.env;
+const BREVO = env.BREVO_API_KEY;
+const RESEND = env.RESEND_API_KEY;
+const SMTP = env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS;
+const FROM = env.MAIL_FROM || env.SMTP_USER || "";
+const NAME = env.MAIL_NAME || "Allo..Ala Jeux";
 
-export const mailConfigured = Boolean((BREVO || RESEND) && FROM);
+let transport = null;
+function smtp() {
+  if (!transport) {
+    const port = Number(env.SMTP_PORT || 465);
+    transport = nodemailer.createTransport({
+      host: env.SMTP_HOST,
+      port,
+      secure: port === 465, // 465 = SSL ; 587 = STARTTLS
+      auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
+      ...(env.SMTP_INSECURE === "1" ? { tls: { rejectUnauthorized: false } } : {}),
+    });
+  }
+  return transport;
+}
+
+export const mailConfigured = Boolean((SMTP || BREVO || RESEND) && FROM);
+export const mailMethod = SMTP ? "smtp" : BREVO ? "brevo" : RESEND ? "resend" : null;
 export const devMail = !mailConfigured && process.env.DEV_MAIL === "1";
 
 const hash = (s) => crypto.createHash("sha256").update(s).digest("hex");
@@ -34,6 +53,10 @@ async function deliver(email, code) {
   const subject = `${code} est votre code Allo..Ala Jeux`;
   const html = template(code);
   const text = `Votre code Allo..Ala Jeux : ${code} (valable 10 minutes).`;
+  if (SMTP) {
+    await smtp().sendMail({ from: `"${NAME}" <${FROM}>`, to: email, subject, html, text });
+    return;
+  }
   let r;
   if (BREVO) {
     r = await fetch("https://api.brevo.com/v3/smtp/email", {

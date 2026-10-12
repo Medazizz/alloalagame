@@ -31,6 +31,15 @@ function devApi() {
   };
 }
 
-export default defineConfig({
+// Chemin du site : « / » en développement, « /jeu/ » sur le serveur (BASE_PATH dans .env)
+function basePath() {
+  let b = process.env.BASE_PATH;
+  if (!b && fs.existsSync(".env")) b = (fs.readFileSync(".env", "utf8").match(/^\s*BASE_PATH\s*=\s*"?([^"\n]+)"?/m) || [])[1];
+  b = (b || "/").trim();
+  return ("/" + b.replace(/^\/+|\/+$/g, "") + "/").replace("//", "/");
+}
+
+export default defineConfig(({ command }) => ({
+  base: command === "build" ? basePath() : "/",
   plugins: [react(), devApi()],
-});
+}));

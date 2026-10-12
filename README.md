@@ -49,27 +49,17 @@ npm run dev
 ```
 
 En local, tout fonctionne sans configuration : les données sont gardées en mémoire et le code
-e-mail s'affiche à l'écran (mode test). Admin : `http://localhost:5173/#admin`, clé `dev`.
+e-mail s'affiche à l'écran (mode test). Admin : `http://localhost:5173/#admin`, clé `dev` (uniquement en local).
 
-## Mise en ligne (Vercel)
+## Mise en ligne sur le VPS (recommandé)
 
-Variables d'environnement (Vercel → Settings → Environment Variables) :
+Tout tourne sur votre serveur, sans service extérieur : voir **[deploy/GUIDE-INSTALLATION.md](deploy/GUIDE-INSTALLATION.md)**.
+En résumé : `cp .env.example .env` (remplir les réglages SMTP de contact@alloala.com), puis
+`bash deploy/install.sh`, puis ajouter `deploy/nginx.conf` à nginx. Le jeu est sur https://alloala.com/jeu/.
 
-| Variable | Rôle |
-|---|---|
-| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Base de données Upstash Redis (gratuite), créée via Vercel → Storage → Upstash Redis |
-| `BREVO_API_KEY` | Envoi des codes par e-mail avec Brevo (gratuit, 300 e-mails / jour) |
-| `MAIL_FROM` | Adresse d'expédition vérifiée dans Brevo (une simple adresse Gmail suffit) |
-| `MAIL_NAME` | (facultatif) Nom de l'expéditeur, « Allo..Ala Jeux » par défaut |
-| `ADMIN_KEY` | Mot de passe de l'interface admin (`/#admin`) |
+Vérification : `https://alloala.com/jeu/api/health` doit afficher `"ready": true`.
 
-`RESEND_API_KEY` peut remplacer `BREVO_API_KEY` (Resend : 100 e-mails / jour gratuits).
-
-Vérification : ouvrir `/api/health` sur le site en ligne. Tout est prêt quand la page affiche
-`"ready": true`. En ligne, le site refuse de fonctionner sans base de données (aucune donnée
-n'est jamais gardée en mémoire) et n'affiche jamais le code à l'écran.
-
-## Interface admin (`/#admin`)
+## Interface admin (https://alloala.com/jeu/#admin)
 
 - **🏆 Semaine** : classement complet avec e-mail et téléphone, les 3 gagnants avec leur prix,
   « 💬 Prévenir » (WhatsApp) et « Marquer récompensé », export Excel.

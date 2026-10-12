@@ -2,7 +2,7 @@
 // base de données, envoi des e-mails, mot de passe admin.
 import { send } from "./_lib/util.js";
 import { store, storeConfigured } from "./_lib/store.js";
-import { mailConfigured } from "./_lib/mail.js";
+import { mailConfigured, mailMethod } from "./_lib/mail.js";
 
 export default async function handler(req, res) {
   let database = storeConfigured ? "configurée" : "absente";
@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   return send(res, ready ? 200 : 503, {
     ready,
     database,
-    email: mailConfigured ? "ok" : "absent (BREVO_API_KEY + MAIL_FROM)",
+    email: mailConfigured ? `ok (${mailMethod})` : "absent (SMTP_HOST, SMTP_USER, SMTP_PASS)",
     admin: process.env.ADMIN_KEY ? "ok" : "absent (ADMIN_KEY)",
   });
 }
